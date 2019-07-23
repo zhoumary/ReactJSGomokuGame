@@ -8,5 +8,5 @@ Refer to https://zh-hans.reactjs.org/tutorial/tutorial.html#determining-when-to-
 
 
 除上述外：
-1. 获取每次的走步信息作为历史信息显示
-2. 重新进行游戏布局
+1. 获取每次的走步信息作为历史信息显示 - OK
+2. 重新进行游戏布局 - 
