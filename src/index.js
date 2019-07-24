@@ -19,26 +19,54 @@ class Board extends React.Component {
                 onClick={() => this.props.onClick(i)}
             />
         );
-    }   
+    }
+    
+    // create board
+    createBoard(count, index) {
+        let div = [];
+        if (count) {
+            let divCount = 0;
+            for (let i = 0; i < count; i++) {
+                let children = [];
+                //Inner loop to create children
+                const newIndex = index[i] - count;
+                for (let j = newIndex; j < index[i]; j++) {
+                    children.push(this.renderSquare(j));
+                }
+                
+                //Create the parent and add the children
+                div.push(<div className="board-row">{children}</div>);
+                divCount = divCount + 1;
+            }           
+        }
+        return div;
+    }
 
     render() {
-        return (
+        return (  
             <div>
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
+                {this.createBoard(3,[3,6,9])}
+                {/* <div className="board-row">
+                    {
+                        [0,1,2].map ( (n) => {
+                            return this.renderSquare(n)
+                        })
+                    }
                 </div>
                 <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
+                    {
+                        [3,4,5].map ( (n) => {
+                            return this.renderSquare(n)
+                        })
+                    }
                 </div>
                 <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
+                    {
+                        [6, 7, 8].map((n) => {
+                            return this.renderSquare(n)
+                        })
+                    }
+                </div> */}
             </div>
         );
     }
@@ -54,7 +82,8 @@ class Game extends React.Component {
             xIsNext: true,
             position: [
                 Array(2).fill(null)
-            ]
+            ],
+            histSelected: null
         }
     }
 
@@ -89,33 +118,34 @@ class Game extends React.Component {
         const currPos = [];
         currPos.push(row);
         currPos.push(column);
-        const test01 = currPosition[0][0];
-        const test02 = currPosition[0][1];
-        if (currPosition.length === 1 && currPosition[0][0] === null && currPosition[0][1] === null) {
-            currPosition[0][0] = row;
-            currPosition[0][1] = column;
-        }else{
-            currPosition.push(currPos);
-        }
-        const test = currPosition;
+        currPosition.push(currPos);
         this.setState({
             history: history.concat([{
                 squares: squares
             }]),
             xIsNext: !this.state.xIsNext,
             position: currPosition
-        });
+        });        
     }   
     
     jumpTo(move) {
         const histInst = this.state.history[move];
         const history = this.state.history;
 
+
+        var btn = document.getElementById(move);
+        btn.style.fontWeight = 'bold';
+        if (move) {
+            var oldBtn = document.getElementById(this.state.histSelected);
+            oldBtn.style.fontWeight = 'normal';
+        }
+
         this.setState({
             history: history.concat([{
                 squares: histInst.squares
             }]),
-            xIsNext: move%2 == 0,
+            xIsNext: move % 2 == 0,
+            histSelected: move
         });
 
     }
@@ -135,7 +165,7 @@ class Game extends React.Component {
             return (
                 <div>
                     <li key={move}>
-                        <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                        <button id={move} onClick={() => this.jumpTo(move)}>{desc}</button>
                         <p>{curResult}</p>
                     </li>
                     <br />
@@ -150,8 +180,9 @@ class Game extends React.Component {
             let currentPosition = [];
             if (move === 0) {
                 currentPosition = position[0];
-            }else{
-                currentPosition = position;
+            } else {
+                currentPosition = position.slice(0, move);
+                currentPosition.push(position[move]);
             }
             const currPosition = JSON.stringify(currentPosition);
 
@@ -168,8 +199,21 @@ class Game extends React.Component {
         });
 
         let status;
+        let allAssigned = false;
+        let assignedLen = 0;
+        for (let index = 0; index < current.squares.length; index++) {
+            if (current.squares[index] !== null) {
+                assignedLen = assignedLen + 1;
+            }            
+        }
+        if (current.squares.length === assignedLen) {
+            allAssigned = true;
+        }
+        
         if (winner) {
             status = 'Winner: ' + winner;
+        } else if (allAssigned) {
+            status = 'Game is a draw.';
         } else {
             status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
         }        
