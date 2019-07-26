@@ -8,6 +8,10 @@ ul {
     padding-left: 30px;
 }
 
+.game-board{
+    margin-left: 10px;
+}
+
 .board-row:after {
     clear: both;
     content: "";
@@ -48,6 +52,15 @@ ul {
 
 .game-info {
     margin-left: 20px;
+}
+
+.game-info .statusDiv {
+    display: inline;
+    margin-right: 10px;
+}
+
+.game-info #descSorting {
+    margin-right: 10px;
 }
 
 .history-info {
