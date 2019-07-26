@@ -5,7 +5,7 @@ import './index.css';
 // for the class just use render, which we can use function component to replace
 function Square(props) {
     return (
-        <button className="square" onClick={props.onClick}>
+        <button id={"square" + props.identiy} className="square" onClick={props.onClick}>
             {props.value}
         </button>
     );    
@@ -15,6 +15,7 @@ class Board extends React.Component {
     renderSquare(i) {
         return (
             <Square
+                identiy={i}
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
             />
@@ -150,12 +151,70 @@ class Game extends React.Component {
 
     }
 
+    highlightSquares(squares) {
+        const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+        for (let i = 0; i < lines.length; i++) {
+            const [a, b, c] = lines[i];
+            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+                return lines[i];
+            }
+        }
+        return null;
+    }
+
+    sortHistory(sortWay) {
+        // sort the history list - asc and desc
+        this.sortStep(sortWay);
+        const movesList = document.getElementById("moves");
+        [].map.call(movesList.children, Object).sort(function (a, b) {
+            if (sortWay === "desc") {
+                return +b.id.match(/\d+/) - +a.id.match(/\d+/);
+            } else if (sortWay === "asc") {
+                return +a.id.match(/\d+/) - +b.id.match(/\d+/);
+            }            
+        }).forEach(function (elem) {
+            movesList.appendChild(elem);
+        });
+    }
+
+    sortStep(sortWay) {
+        // sort the history list - asc and desc
+        const posList = document.getElementById("positions");
+        [].map.call(posList.children, Object).sort(function (a, b) {
+            if (sortWay === "desc") {
+                return +b.id.match(/\d+/) - +a.id.match(/\d+/);
+            } else if (sortWay === "asc") {
+                return +a.id.match(/\d+/) - +b.id.match(/\d+/);
+            }
+        }).forEach(function (elem) {
+            posList.appendChild(elem);
+        });
+    }   
+
     render() {
         const history = this.state.history;
         const position = this.state.position;
         const current = history[history.length - 1];
                
         const winner = calculateWinner(current.squares);
+        const winSquares = this.highlightSquares(current.squares);
+        if (winSquares) {
+            // highlight the squares
+            for (let index = 0; index < winSquares.length; index++) {
+                const element = "square" + winSquares[index];
+                var square = document.getElementById(element);
+                square.style.backgroundColor = 'yellow';
+            }
+        }
 
         const moves = history.map((step, move) => {
             const desc = move ?
@@ -163,7 +222,7 @@ class Game extends React.Component {
                 'Go to game start';
             const curResult = JSON.stringify(history[move].squares);
             return (
-                <div>
+                <div id={move}>
                     <li key={move}>
                         <button id={move} onClick={() => this.jumpTo(move)}>{desc}</button>
                         <p>{curResult}</p>
@@ -188,7 +247,7 @@ class Game extends React.Component {
 
 
             return (
-                <div>
+                <div id={move}>
                     <li key={move}>
                         <p>{desc}</p>
                         <p>{currPosition}</p>
@@ -197,6 +256,7 @@ class Game extends React.Component {
                 </div>
             );
         });
+
 
         let status;
         let allAssigned = false;
@@ -211,11 +271,11 @@ class Game extends React.Component {
         }
         
         if (winner) {
-            status = 'Winner: ' + winner;
+            status = 'Winner: ' + winner + '  ';
         } else if (allAssigned) {
-            status = 'Game is a draw.';
+            status = 'Game is a draw.  ';
         } else {
-            status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+            status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O') + '  ';
         }        
         
         return (
@@ -226,14 +286,20 @@ class Game extends React.Component {
                         onClick={(i) => this.handleClick(i)}/>
                 </div>
                 <div className="game-info">
-                    <div>{status}</div>
+                    <div>
+                        <p class="statusDiv">{status}</p>
+                        <button id="descSorting" onClick={() => this.sortHistory("desc")}>Descending Sort History</button>
+                        <button id="ascSorting" onClick={() => this.sortHistory("asc")}>Ascending Sort History</button>
+                    </div>
                     <br />
-                    <ol>{moves}</ol>
+                    <p>Steps History</p>
+                    <ol id="moves">{moves}</ol>
                 </div>
                 <div className="history-info">
                     <br />
                     <br />
-                    <ol>{positions}</ol>
+                    <p>Every Step</p>
+                    <ol id="positions">{positions}</ol>
                 </div>
             </div>
         );
